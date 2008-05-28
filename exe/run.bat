@@ -1,0 +1,1 @@
+DVFlasher_1_10.exe -fnandbin u-boot.bin
