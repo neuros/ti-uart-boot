@@ -10,6 +10,8 @@
  	          Daniel Allred - Jan-22-2007
 	     v1.1 modify for neuros
 	          Terry Qiu tqiu@neuros.com.cn -May-28-2008
+		 v1.2 modify for neuros
+			  Frank Xue frank.xue@neuros.com.cn - May-28-2008
  ----------------------------------------------------------------------------- */
 
 #ifdef UBL_NAND
@@ -372,6 +374,7 @@ Uint32 NAND_ReadPage(Uint32 block, Uint32 page, Uint8 *dest)
 	Uint32 eccValue[4];
 	Uint32 spareValue[4],tempSpareValue;
 	Uint8 numReads,i;
+	Uint32 bytesRead;
 	
 	//Setup numReads
 	numReads = (gNandInfo.bytesPerPage >> 9);
@@ -394,15 +397,20 @@ Uint32 NAND_ReadPage(Uint32 block, Uint32 page, Uint8 *dest)
 	// Starting the ECC in the NANDFCR register for CS2(bit no.8)
 	NAND_ECCReadAndRestart((PNAND_INFO)&gNandInfo);
 
+	if (gNandInfo.bigBlock)
+		bytesRead = 512;
+	else
+		bytesRead = gNandInfo.bytesPerPage;
+
 	// Read the page data
 	for (i=0; i<numReads; i++)
 	{
 	     // Actually read bytes
-	     flash_read_bytes((PNAND_INFO)&gNandInfo, (void*)(dest), gNandInfo.bytesPerPage);	    
+	     flash_read_bytes((PNAND_INFO)&gNandInfo, (void*)(dest), bytesRead);
 	     // Get the ECC Value
 	     eccValue[i] = NAND_ECCReadAndRestart((PNAND_INFO)&gNandInfo);
 	     //Increment pointer
-	     dest += gNandInfo.bytesPerPage;
+	     dest += bytesRead;
 	}
 		
 	// Read the stored ECC value(s)
@@ -446,6 +454,7 @@ Uint32 NAND_WritePage(Uint32 block, Uint32 page, Uint8 *src)
 	Uint32 eccValue[4];
 	Uint32 tempSpareValue[4];
 	Uint8 numWrites,i;
+	Uint32 bytesWrite;
 	
 	//Setup numReads
 	numWrites = (gNandInfo.bytesPerPage >> 9);
@@ -460,17 +469,22 @@ Uint32 NAND_WritePage(Uint32 block, Uint32 page, Uint8 *src)
 	// Starting the ECC in the NANDFCR register for CS2(bit no.8)
 	NAND_ECCReadAndRestart((PNAND_INFO)&gNandInfo);
 	
+	if (gNandInfo.bigBlock)
+		bytesWrite = 512;
+	else
+		bytesWrite = gNandInfo.bytesPerPage;
+
 	// Write data
 	for (i=0; i<numWrites; i++)
 	{
 	     // Write data to page
-	     flash_write_bytes((PNAND_INFO)&gNandInfo, (void*) src, gNandInfo.bytesPerPage);
+	     flash_write_bytes((PNAND_INFO)&gNandInfo, (void*) src, bytesWrite);
 	    
 	     // Read the ECC value
 	     eccValue[i] = NAND_ECCReadAndRestart((PNAND_INFO)&gNandInfo);
 	    
 	     // Increment the pointer
-	     src += gNandInfo.bytesPerPage;
+	     src += bytesWrite;
 	}
 	
 	// Write spare bytes
