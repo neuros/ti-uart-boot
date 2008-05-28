@@ -6,8 +6,12 @@
 #############################################################
 # Auth: Daniel Allred (d-allred@ti.com)
 # Vers: v1.1 on 1-Feb-2007
+# 
+# modified for neuros
+# Terry Qiu tqiu@neuros.com.cn
+# v1.2 on 28-May-2008
 
-CROSSCOMPILE=arm_v5t_le-
+CROSSCOMPILE=arm-linux-
 CC=$(CROSSCOMPILE)gcc
 OBJCOPY=$(CROSSCOMPILE)objcopy
 OBJDUMP=$(CROSSCOMPILE)objdump

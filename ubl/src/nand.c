@@ -8,6 +8,8 @@
     HISTORY
  	     v1.0 completion 							 						      
  	          Daniel Allred - Jan-22-2007
+	     v1.1 modify for neuros
+	          Terry Qiu tqiu@neuros.com.cn -May-28-2008
  ----------------------------------------------------------------------------- */
 
 #ifdef UBL_NAND
@@ -420,7 +422,8 @@ Uint32 NAND_ReadPage(Uint32 block, Uint32 page, Uint8 *dest) {
             flash_swap_data((PNAND_INFO)&gNandInfo, (Uint32*)(spareValue));
             tempSpareValue = spareValue[0];
         }
-
+	if(tempSpareValue = 0xffffffff)	tempSpareValue = ~tempSpareValue;
+	if(eccValue[i] = 0xffffffff) eccValue[i] = ~eccValue[i];
 	    // Verify ECC values
 		if(eccValue[i] != tempSpareValue)
         {
