@@ -274,8 +274,8 @@ namespace DVFlasher
             myCmdParams.UARTUBLExecAddr = 0x0100;
             myCmdParams.UARTUBLUsed = true;
             
-            myCmdParams.NORUBLExecAddr = 0x29e8;
-            myCmdParams.NANDUBLExecAddr = 0x238c;
+            myCmdParams.NORUBLExecAddr = 0x0100;
+            myCmdParams.NANDUBLExecAddr = 0x0100;
 
             myCmdParams.APPMagicFlag = MagicFlags.UBL_MAGIC_SAFE;
             myCmdParams.APPFileName = null;
@@ -795,7 +795,7 @@ namespace DVFlasher
         /// on the DM644x device.
         /// </param>
         /// <returns></returns>
-        private static Byte[] GetFileData(String filename, UInt32 decAddr, Boolean stripData)
+        private static Byte[] GetFileData(String filename, UInt32 decAddr)
         {
             FileStream fs;
             Byte[] data;
@@ -815,7 +815,7 @@ namespace DVFlasher
             }
             else //Assume the file is a binary file
             {
-                data = bin2srec(fs, decAddr, stripData);
+                data = bin2srec(fs, decAddr);
             }
             return data;
         }
@@ -841,15 +841,11 @@ namespace DVFlasher
             UBLbr = new BinaryReader(UBLstream);
             
             // Create the byte array and stringbuilder for holding UBL file data
-            UBLFileData = new Byte[(UBLstream.Length-256)];
-            UBLsb = new StringBuilder((UBLFileData.Length-256) * 2);
-
-            // Skip the first 0x100 bytes since they contain slef-copy stuff
-            // This is required to mimic the SDI flashwriter programs (Ugh!)
-            UBLbr.BaseStream.Seek(256, SeekOrigin.Begin);
+            UBLFileData = new Byte[UBLstream.Length];
+            UBLsb = new StringBuilder(UBLFileData.Length * 2);
             
             // Read the data from the UBL file into the appropriate structures
-            for (int i = 0; i < ((UBLstream.Length-256) / sizeof(UInt32)); i++)
+            for (int i = 0; i < (UBLstream.Length / sizeof(UInt32)); i++)
             {
                 data = UBLbr.ReadUInt32();
                 System.BitConverter.GetBytes(data).CopyTo(UBLFileData, i * sizeof(UInt32));
@@ -883,7 +879,7 @@ namespace DVFlasher
                 MySP.Write(UBLcrc.ToString("X8"));
                 
                 // 4 bytes of UBL data size = ASCII string of 4 hex characters (3800h = 14336d)
-                MySP.Write((UBLstream.Length-256).ToString("X4"));
+                MySP.Write(UBLstream.Length.ToString("X4"));
                 
                 // 4 bytes of start address = ASCII string of 4 hex characters (>=0100h)
                 MySP.Write(cmdParams.UARTUBLExecAddr.ToString("X4"));
@@ -999,7 +995,7 @@ namespace DVFlasher
             // Local Variables for reading APP file
             Byte[] APPFileData;
 
-            APPFileData = GetFileData(cmdParams.APPFileName, cmdParams.APPLoadAddr, false);
+            APPFileData = GetFileData(cmdParams.APPFileName, cmdParams.APPLoadAddr);
 
             try
             {
@@ -1076,13 +1072,13 @@ namespace DVFlasher
             Byte[] FLASHUBLData;
 
             // Get Application image data
-            APPFileData = GetFileData(cmdParams.APPFileName, cmdParams.APPLoadAddr, false);
+            APPFileData = GetFileData(cmdParams.APPFileName, cmdParams.APPLoadAddr);
 
             // Get Flash UBL data (either embedded or from file)
             if (cmdParams.useEmbeddedUBL)
-                FLASHUBLData = bin2srec(GetEmbeddedUBLStream(), cmdParams.FLASHUBLLoadAddr, (cmdParams.UBLFlashType == FlashType.NAND));
+                FLASHUBLData = bin2srec(GetEmbeddedUBLStream(), cmdParams.FLASHUBLLoadAddr);
             else
-                FLASHUBLData = GetFileData(cmdParams.FLASHUBLFileName, cmdParams.FLASHUBLLoadAddr, (cmdParams.UBLFlashType == FlashType.NAND));            
+                FLASHUBLData = GetFileData(cmdParams.FLASHUBLFileName, cmdParams.FLASHUBLLoadAddr);            
                               
             try
             {
@@ -1282,7 +1278,7 @@ namespace DVFlasher
         /// <param name="startAddr">The starting address of the RAM location where the binary data
         /// encapsulated by the S-record will be stored.</param>
         /// <returns>A byte array of the file data.</returns>
-        public static Byte[] bin2srec(Stream inputStream, UInt32 startAddr, Boolean stripSelfCopyData)
+        public static Byte[] bin2srec(Stream inputStream, UInt32 startAddr)
         {
             Int64 totalLen;
             BinaryReader fileBR = new BinaryReader(inputStream);
@@ -1296,10 +1292,7 @@ namespace DVFlasher
             UInt32 memAddr = startAddr;
             
             // Set the actual length
-            if (stripSelfCopyData)
-                totalLen = fileBR.BaseStream.Length - 256;
-            else
-                totalLen = fileBR.BaseStream.Length;
+            totalLen = fileBR.BaseStream.Length;
             fileSB = new StringBuilder(4 * (int)totalLen);
             
             // Set S-record filename (real name or fake)
@@ -1308,11 +1301,7 @@ namespace DVFlasher
             else
                 fileName = "ublDaVinci.bin";            
                         
-            // Make sure we are at the right place in the stream
-            if (stripSelfCopyData)
-                fileBR.BaseStream.Seek(0x100, SeekOrigin.Begin);
-            else
-                fileBR.BaseStream.Seek(0x0, SeekOrigin.Begin);
+            fileBR.BaseStream.Seek(0x0, SeekOrigin.Begin);
             
             // Get filename (this is S-record module name)
             if (Path.HasExtension(fileName))

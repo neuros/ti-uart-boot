@@ -6,13 +6,22 @@
     DATE	    : Dec-18-2006  
  
     HISTORY
-        v1.0 completion 							 						      
+        v1.00 completion 							 						      
  	        Daniel Allred - Jan-22-2006
- 	    v1.1
- 	        DJA - Feb-1-2007 - Added dummy entry point make NAND UBL work
- 	                           with the CCS flashing utility from SDI. This
- 	                           fakeentry is located at 0x20 at runtime and
- 	                           simply redirects to the true entry point, boot().
+ 	    v1.10 - DJA - Feb-1-2007
+ 	        Added dummy entry point make NAND UBL work
+ 	        with the CCS flashing utility from SDI. This
+ 	        fakeentry is located at 0x20 at runtime and
+ 	        simply redirects to the true entry point, boot().
+ 	    v1.11 - DJA - 7-Mar-2007
+ 	        Changed power domain initializations.  Added call to 
+ 	        PSCInit() as first thing, otherwise WDT resets would fail.
+		v1.12 - DJA - 14-Mar-2007
+			Bug fix in nand code
+		v1.13 - DJA - 04-Jun-2007
+			Hefty revision of NAND code - addition of ECC correction for UBL 
+			boot of U-boot or application image. Fix for memory setup in 
+			dm644x.c
  	                                                                      
  ----------------------------------------------------------------------------- */
 
@@ -64,11 +73,6 @@ void selfcopy()
 	boot();	
 }
 
-void fake_entry()
-{
-    boot();
-}
-
 void boot()
 {   
 	asm(" MRS	r0, cpsr");
@@ -100,14 +104,9 @@ Int32 main(void)
 	// Read boot mode 
 	gBootMode = (BootMode) ( ( (SYSTEM->BOOTCFG) & 0xC0) >> 6);
 	
-	if (gBootMode != NON_SECURE_UART)
-    {
-        // Turn on the UART since it's not on by default in NOR 
-        // or NAND boot modes
-        waitloop(1000);
-        LPSCTransition(LPSC_UART0,PSC_ENABLE);
-    }
-    else
+	PSCInit();
+	
+	if (gBootMode == NON_SECURE_UART)
     {
         // Wait until the RBL is done using the UART. 
         while((UART0->LSR & 0x40) == 0 );

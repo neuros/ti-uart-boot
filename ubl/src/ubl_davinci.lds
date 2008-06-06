@@ -1,11 +1,14 @@
 /*
  *  Desc: Linker command file ubl application program.
- *  Auth: Daniel Allred (d-allred@ti.com)
+ *  Auth: Daniel Allred
  *  Vers: 1.0 on 08-Nov-2006
  *        1.1 on 01-Feb-2007 - Added fake entry point fixed at 0x20. 
  *							   Made the selfcopy section end at 0x100
  *                             to match what the SDI CCS tool assumes.
  *							   Also reordered sections.
+ *		  1.13 on 04-Jun-2007 - Revised entry point to correspond with new 
+ *                             CCS tools, DV_NANDWriter and DV_NORWriter.
+ *        1.14 on 13-Sep-2007
  */
 
 ENTRY(boot)
@@ -14,37 +17,34 @@ SECTIONS {
 	__CS2start = .;
 	__NORFlash = .;
 	__NANDFlash = .;
+	
+	__selfcopysrc = .;
+	__IVT = 0x00008000;
+	__selfcopydest = 0x00008020;
+	
+	/* Self copy code is in first 256-32=224 bytes of image */
 	.selfcopy : AT (0x0)
 	{
 		*(.selfcopy)		
-		. = ALIGN(256);
+		. = 0xE0;
 	}
-	
-	__selfcopysrc = .;	
-	__IVT = 0x00008000;
-	__selfcopydest = 0x00008020;
 
-	. = 0x20;
-	.fakeentry : AT ( LOADADDR(.selfcopy) + SIZEOF(.selfcopy))
-	{
-		*(.fakeentry)
-		. = ALIGN(4);
-	}
-		
-	.text		: AT ( LOADADDR(.fakeentry) + SIZEOF(.fakeentry) )
-	{
-		*(.text)
-		. = ALIGN(4);
-	}
-	.boot		: AT ( LOADADDR(.text) + SIZEOF(.text))
+	/* The entry point address is fixed at 0x100 */
+	. = 0x100;
+	.boot		: AT ( LOADADDR(.selfcopy) + SIZEOF(.selfcopy))
 	{
 		*(.boot)
+		. = ALIGN(4);
+	}
+	.text		: AT ( LOADADDR(.boot) + SIZEOF(.boot) )
+	{
+		*(.text)
 		. = ALIGN(4);
 	}
 	
 	. += 0x8000;
 	
-	.rodata		: AT ( LOADADDR(.boot) + SIZEOF(.boot) )
+	.rodata		: AT ( LOADADDR(.text) + SIZEOF(.text) )
 	{
 		*(.rodata*)
 		*(.rodata)
@@ -57,8 +57,8 @@ SECTIONS {
 		. = ALIGN(4);
 	}
 			
-	__selfcopydestend = __selfcopydest + SIZEOF(.fakeentry) +
-						SIZEOF(.text) + SIZEOF(.boot) +
+	__selfcopydestend = __selfcopydest + SIZEOF(.selfcopy) +
+						SIZEOF(.boot) + SIZEOF(.text) + 
 						SIZEOF(.data) + SIZEOF(.rodata);
 	
 	.bss		:

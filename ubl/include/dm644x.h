@@ -7,7 +7,9 @@
  
     HISTORY
  	     v1.00 completion 							 						      
- 	          Daniel Allred - Jan-22-2007                                              
+ 	          Daniel Allred - Jan-22-2007
+ 	     v1.11 DJA - 7-Mar-2007 
+ 	        Added additional required defines for the LPSCs                                          
  ----------------------------------------------------------------------------- */
 
 
@@ -151,46 +153,46 @@ typedef struct _PLL_regs_
  * -------------------------------------------------------------------------- */
 typedef struct _PSC_regs_
 {
-	VUint32 PID;
-	VUint8 RSVD0[12];
-	VUint32 GBLCTL;
-	VUint8 RSVD1[4];
-	VUint32 INTEVAL;
-	VUint8 RSVD2[36];	
-	VUint32 MERRPR0;
-	VUint32 MERRPR1;
-	VUint8 RSVD3[8];
-	VUint32 MERRCR0;
-	VUint32 MERRCR1;		
-	VUint8 RSVD4[8];
-	VUint32 PERRPR;
-	VUint8 RSVD5[4];
-	VUint32 PERRCR;
-	VUint8 RSVD6[4];
-	VUint32 EPCPR;
-	VUint8 RSVD7[4];
-	VUint32 EPCCR;
-	VUint8 RSVD8[132];
-	VUint32 RAILSTAT;
-	VUint32 RAILCTL;
-	VUint32 RAILSEL;
-	VUint8 RSVD9[20];
-	VUint32 PTCMD;
-	VUint8 RSVD10[4];
-	VUint32 PTSTAT;
-	VUint8 RSVD11[212];
-	VUint32 PDSTAT0;
-	VUint32 PDSTAT1;
-	VUint8 RSVD12[248];
-	VUint32 PDCTL0;
-	VUint32 PDCTL1;
-	VUint8 RSVD13[536];
-	VUint32 MCKOUT0;
-	VUint32 MCKOUT1;
-	VUint8 RSVD14[728];
-	VUint32 MDSTAT[41];
-	VUint8 RSVD15[348];
-	VUint32 MDCTL[41];
+	VUint32 PID;        // 0x000
+	VUint8 RSVD0[12];   // 0x004
+	VUint32 GBLCTL;     // 0x010
+	VUint8 RSVD1[4];    // 0x014
+	VUint32 INTEVAL;    // 0x018
+	VUint8 RSVD2[36];	// 0x01C
+	VUint32 MERRPR0;    // 0x040
+	VUint32 MERRPR1;    // 0x044
+	VUint8 RSVD3[8];    // 0x048
+	VUint32 MERRCR0;    // 0x050
+	VUint32 MERRCR1;    // 0x054
+	VUint8 RSVD4[8];    // 0x058
+	VUint32 PERRPR;     // 0x060
+	VUint8 RSVD5[4];    // 0x064
+	VUint32 PERRCR;     // 0x068
+	VUint8 RSVD6[4];    // 0x06C
+	VUint32 EPCPR;      // 0x070
+	VUint8 RSVD7[4];    // 0x074
+	VUint32 EPCCR;      // 0x078
+	VUint8 RSVD8[132];  // 0x07C
+	VUint32 RAILSTAT;   // 0x100
+	VUint32 RAILCTL;    // 0x104
+	VUint32 RAILSEL;    // 0x108
+	VUint8 RSVD9[20];   // 0x10C
+	VUint32 PTCMD;      // 0x120
+	VUint8 RSVD10[4];   // 0x124
+	VUint32 PTSTAT;     // 0x128
+	VUint8 RSVD11[212]; // 0x12C
+	VUint32 PDSTAT0;    // 0x200
+	VUint32 PDSTAT1;    // 0x204
+	VUint8 RSVD12[248]; // 0x208
+	VUint32 PDCTL0;     // 0x300
+	VUint32 PDCTL1;     // 0x304
+	VUint8 RSVD13[536]; // 0x308
+	VUint32 MCKOUT0;    // 0x520
+	VUint32 MCKOUT1;    // 0x524
+	VUint8 RSVD14[728]; // 0x528
+	VUint32 MDSTAT[41]; // 0x800
+	VUint8 RSVD15[348]; // 0x8A4
+	VUint32 MDCTL[41];  // 0xA00
 } PSCRegs;
 
 #define PSC ((PSCRegs*) 0x01C41000)
@@ -203,17 +205,24 @@ typedef struct _PSC_regs_
 #define LPSC_TPTC1       	4
 #define LPSC_EMAC0       	5
 #define LPSC_EMAC1       	6
+#define LPSC_MDIO           7
+#define LPSC_1394           8
 #define LPSC_USB            9
 #define LPSC_ATA            10
 #define LPSC_VLYNQ          11
+#define LPSC_HPI            12
 #define LPSC_DDR2           13
 #define LPSC_AEMIF			14
 #define LPSC_MMCSD          15
+#define LPSC_MEMSTK         16
+#define LPSC_ASP            17
 #define LPSC_I2C            18
 #define LPSC_UART0          19
+#define LPSC_GPIO           26
 #define LPSC_TIMER0         27
 #define LPSC_ARM            31
 #define LPSC_DSP            39
+#define LPSC_IMCOP          40
 
 #define EMURSTIE_MASK       0x00000200
 
@@ -371,6 +380,7 @@ void LPSCTransition(Uint8 module, Uint8 state);
 
 // Initialization prototypes
 void DM644xInit(void);
+void PSCInit(void);
 void UARTInit(void);
 void PLL1Init(void);
 void PLL2Init(void);

@@ -3,13 +3,14 @@
     PURPOSE     : UBL main header file
     PROJECT     : DaVinci User Boot-Loader and Flasher
     AUTHOR      : Daniel Allred
-    DATE	    : Jan-22-2007  
  
     HISTORY
-        v1.00 completion
- 	        Daniel Allred - Jan-22-2007
- 	    v1.10 
- 	        DJA - 1-Feb-2007 - Added the fakeentry point function prototype.
+        v1.00 - DJA - Jan-22-2007 - Initial release
+        v1.10 - DJA - 1-Feb-2007 - Added the fakeentry point function prototype.
+        v1.11 - DJA - 7-Mar-2007 - Version number update
+        v1.12 - DJA - 15-Mar-2007 - NAND fix
+        v1.13 - DJA - 04-Jun-2007 - Major NAND revisions
+        v1.14 - DJA - 13-Sep-2007 - DSP power domain init
  ----------------------------------------------------------------------------- */
 
 
@@ -19,7 +20,7 @@
 #include "tistdtypes.h"
 
 //UBL version number
-#define UBL_VERSION_STRING "1.02"
+#define UBL_VERSION_STRING "1.14"
 #ifdef UBL_NAND
 #define UBL_FLASH_TYPE "NAND"
 #else
@@ -55,7 +56,7 @@
 #define UBL_IMAGE_SIZE      (0x00003800)
 
 // Define maximum downloadable image size
-#define MAX_IMAGE_SIZE		(0x00800000)
+#define MAX_IMAGE_SIZE		(0x02000000)
 
 /* Set details of RAM */
 #define RAM_START_ADDR		(0x80000000)
@@ -105,7 +106,6 @@ void boot( void ) __attribute__((naked,section (".boot")));
  * requires that the gnu compiler uses the -nostdlib option. 
  */
 void selfcopy( void ) __attribute__((naked,section (".selfcopy")));
-void fake_entry( void ) __attribute__((naked,section (".fakeentry")));
 
 Int32 main(void);
 void (*APPEntry)(void);

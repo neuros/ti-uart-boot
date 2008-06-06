@@ -3,11 +3,19 @@
     PURPOSE     : Platform initialization file
     PROJECT     : DaVinci User Boot-Loader and Flasher
     AUTHOR      : Daniel Allred
-    DATE	    : Jan-22-2007  
- 
+    DESC:       : System init routines for the user boot loader
+    
     HISTORY
  	     v1.00 completion (with support for DM6441 and DM6441_LV)							 						      
  	          Daniel Allred - Jan-22-2007
+         v1.11 - DJA - 07-Mar-2007
+ 	          Made all DDR and PLL global values as const variables.
+ 	          Added code to set 1394 MDSTAT, as per workaround from U-boot
+ 	          and code to init all power domains to known state.
+         v1.13 - DJA - 04-Jun-2007
+	          Fix for DDRPHYCR misread from user's guide.
+         v1.14 - DJA - 13-Sep-2007
+               Fix for DSP power domain initialzation - reflects U-boot fix
  ----------------------------------------------------------------------------- */
 
 #include "dm644x.h"
@@ -23,94 +31,92 @@ extern Uint32 gEntryPoint;
 // ---------------------------------------------------------------------------
 #if defined(DM6441_LV)
     // For Micron MT47H64M16BT-37E @ 135 MHz   
-    Uint8 DDR_NM = 0;
-    Uint8 DDR_CL = 3;
-    Uint8 DDR_IBANK = 3;
-    Uint8 DDR_PAGESIZE = 2;
-    Uint8 DDR_T_RFC = 17;
-    Uint8 DDR_T_RP = 2;
-    Uint8 DDR_T_RCD = 2;
-    Uint8 DDR_T_WR = 2;
-    Uint8 DDR_T_RAS = 5;
-    Uint8 DDR_T_RC = 7;
-    Uint8 DDR_T_RRD = 1;
-    Uint8 DDR_T_WTR = 1;
-    Uint8 DDR_T_XSNR = 18;
-    Uint8 DDR_T_XSRD = 199;
-    Uint8 DDR_T_RTP = 1;
-    Uint8 DDR_T_CKE = 2;
-    Uint16 DDR_RR = 1264;
-    Uint8 DDR_Board_Delay = 3;
-    Uint8 DDR_READ_Latency = 5;
+    const Uint8 DDR_NM = 0;
+    const Uint8 DDR_CL = 3;
+    const Uint8 DDR_IBANK = 3;
+    const Uint8 DDR_PAGESIZE = 2;
+    const Uint8 DDR_T_RFC = 17;
+    const Uint8 DDR_T_RP = 2;
+    const Uint8 DDR_T_RCD = 2;
+    const Uint8 DDR_T_WR = 2;
+    const Uint8 DDR_T_RAS = 5;
+    const Uint8 DDR_T_RC = 7;
+    const Uint8 DDR_T_RRD = 1;
+    const Uint8 DDR_T_WTR = 1;
+    const Uint8 DDR_T_XSNR = 18;
+    const Uint8 DDR_T_XSRD = 199;
+    const Uint8 DDR_T_RTP = 1;
+    const Uint8 DDR_T_CKE = 2;
+    const Uint16 DDR_RR = 1264;
+    const Uint8 DDR_Board_Delay = 3;
+    const Uint8 DDR_READ_Latency = 5;
     
-    Uint32 PLL2_Mult = 20;
-    Uint32 PLL2_Div1 = 10;
-    Uint32 PLL2_Div2 = 2;
+    const Uint32 PLL2_Mult = 20;
+    const Uint32 PLL2_Div1 = 10;
+    const Uint32 PLL2_Div2 = 2;
 #else
     // For Micron MT47H64M16BT-37E @ 162 MHz
-    Uint8 DDR_NM = 0;
-    Uint8 DDR_CL = 3;
-    Uint8 DDR_IBANK = 3;
-    Uint8 DDR_PAGESIZE = 2;
-    Uint8 DDR_T_RFC = 20;
-    Uint8 DDR_T_RP = 2;
-    Uint8 DDR_T_RCD = 2;
-    Uint8 DDR_T_WR = 2;
-    Uint8 DDR_T_RAS = 6;
-    Uint8 DDR_T_RC = 8;
-    Uint8 DDR_T_RRD = 2;
-    Uint8 DDR_T_WTR = 1;
-    Uint8 DDR_T_XSNR = 22;
-    Uint8 DDR_T_XSRD = 199;
-    Uint8 DDR_T_RTP = 1;
-    Uint8 DDR_T_CKE = 2;
-    Uint16 DDR_RR = 1053;
-    Uint8 DDR_Board_Delay = 3;
-    Uint8 DDR_READ_Latency = 5; 
+    const Uint8 DDR_NM = 0;
+    const Uint8 DDR_CL = 3;
+    const Uint8 DDR_IBANK = 3;
+    const Uint8 DDR_PAGESIZE = 2;
+    const Uint8 DDR_T_RFC = 20;
+    const Uint8 DDR_T_RP = 2;
+    const Uint8 DDR_T_RCD = 2;
+    const Uint8 DDR_T_WR = 2;
+    const Uint8 DDR_T_RAS = 6;
+    const Uint8 DDR_T_RC = 8;
+    const Uint8 DDR_T_RRD = 2;
+    const Uint8 DDR_T_WTR = 1;
+    const Uint8 DDR_T_XSNR = 22;
+    const Uint8 DDR_T_XSRD = 199;
+    const Uint8 DDR_T_RTP = 1;
+    const Uint8 DDR_T_CKE = 2;
+    const Uint16 DDR_RR = 1053;
+    const Uint8 DDR_Board_Delay = 3;
+    const Uint8 DDR_READ_Latency = 5; 
     
-    Uint32 PLL2_Mult = 24;
-    Uint32 PLL2_Div1 = 12;
-    Uint32 PLL2_Div2 = 2;
+    const Uint32 PLL2_Mult = 24;
+    const Uint32 PLL2_Div1 = 12;
+    const Uint32 PLL2_Div2 = 2;
     
     // 567 verison - only use this with older silicon/EVMs
     // For Micron MT47H64M16BT-37E @ 189 MHz
-    /*Uint8 DDR_NM = 0;
-    Uint8 DDR_CL = 4;
-    Uint8 DDR_IBANK = 3;
-    Uint8 DDR_PAGESIZE = 2;
-    Uint8 DDR_T_RFC = 24;
-    Uint8 DDR_T_RP = 2;
-    Uint8 DDR_T_RCD = 2;
-    Uint8 DDR_T_WR = 2;
-    Uint8 DDR_T_RAS = 7;
-    Uint8 DDR_T_RC = 10;
-    Uint8 DDR_T_RRD = 2;
-    Uint8 DDR_T_WTR = 1;
-    Uint8 DDR_T_XSNR = 25;
-    Uint8 DDR_T_XSRD = 199;
-    Uint8 DDR_T_RTP = 1;
-    Uint8 DDR_T_CKE = 2;
-    Uint16 DDR_RR = 1477;
-    Uint8 DDR_Board_Delay = 2;
-    Uint8 DDR_READ_Latency = 5;
+    /*const Uint8 DDR_NM = 0;
+    const Uint8 DDR_CL = 4;
+    const Uint8 DDR_IBANK = 3;
+    const Uint8 DDR_PAGESIZE = 2;
+    const Uint8 DDR_T_RFC = 24;
+    const Uint8 DDR_T_RP = 2;
+    const Uint8 DDR_T_RCD = 2;
+    const Uint8 DDR_T_WR = 2;
+    const Uint8 DDR_T_RAS = 7;
+    const Uint8 DDR_T_RC = 10;
+    const Uint8 DDR_T_RRD = 2;
+    const Uint8 DDR_T_WTR = 1;
+    const Uint8 DDR_T_XSNR = 25;
+    const Uint8 DDR_T_XSRD = 199;
+    const Uint8 DDR_T_RTP = 1;
+    const Uint8 DDR_T_CKE = 2;
+    const Uint16 DDR_RR = 1477;
+    const Uint8 DDR_Board_Delay = 2;
+    const Uint8 DDR_READ_Latency = 5;
     
-    Uint32 PLL2_Mult = 14;
-    Uint32 PLL2_Div1 = 7;
-    Uint32 PLL2_Div2 = 1;*/
+    const Uint32 PLL2_Mult = 14;
+    const Uint32 PLL2_Div1 = 7;
+    const Uint32 PLL2_Div2 = 1;*/
 #endif
 
 // Set CPU clocks
 #if defined(DM6441_LV)
-    Uint32 PLL1_Mult = 15;  // DSP=405 MHz
+    const Uint32 PLL1_Mult = 15;  // DSP=405 MHz
 #elif defined(DM6441)
-    Uint32 PLL1_Mult = 19;  // DSP=513 MHz  
+    const Uint32 PLL1_Mult = 19;  // DSP=513 MHz  
 #else
-    Uint32 PLL1_Mult = 22;  // DSP=594 MHz
+    const Uint32 PLL1_Mult = 22;  // DSP=594 MHz
     // 567 version - only use this with older silicon/EVMs
     // Uint32 PLL1_Mult = 21;
 #endif
-           
-    
     
 // ---------------------------------------------------------
 // End of global PLL and Memory settings
@@ -133,12 +139,6 @@ void DM644xInit()
 	AINTC->EINT0 = 0x0;
 	AINTC->EINT1 = 0x0;		
 	
-	// Put the C64x+ Core into reset (if it's on)
-	PSC->MDCTL[39] &= (~0x00000100);
-	PSC->PTCMD |= 0x00000002;
-	while ((PSC->PTSTAT) & (0x00000002));
-	while ((PSC->MDSTAT[39]) & (0x00000100));
-	
 	/******************* UART Setup **************************/
 	UARTInit();
 	
@@ -152,25 +152,132 @@ void DM644xInit()
 	DDR2Init();
 			
 	/******************* AEMIF Setup *************************/
+	// Handled in NOR or NAND init
 	//AEMIFInit();
     
     /******************* IRQ Vector Table Setup **************/
     IVTInit();
 }
 
+void PSCInit()
+{
+    Uint32 i;
+
+	//***************************************
+	// Do always on power domain transitions
+	//***************************************
+	while ((PSC->PTSTAT) & 0x00000001);
+
+    for( i = LPSC_VPSS_MAST ; i < LPSC_1394 ; i++ )
+        PSC->MDCTL[i] |= 0x03; // Enable
+
+	// Do this for enabling a WDT initiated reset this is a workaround
+	// for a chip bug.  Not required under normal situations 
+	// Copied from U-boot boards/DaVinci/platform.S and convereted to C
+	//      LDR R6, P1394
+	//      MOV R10, #0x0	
+	//      STR R10, [R6]        
+    PSC->MDCTL[LPSC_1394] = 0x0;
+    
+    for( i = LPSC_USB ; i < LPSC_DSP ; i++ )
+        PSC->MDCTL[i] |= 0x03; // Enable
+
+    // Set EMURSTIE to 1 on the following
+    PSC->MDCTL[LPSC_VPSS_SLV]   |= 0x0203;
+    PSC->MDCTL[LPSC_EMAC0]      |= 0x0203;
+    PSC->MDCTL[LPSC_EMAC1]      |= 0x0203;
+    PSC->MDCTL[LPSC_MDIO]       |= 0x0203;
+    PSC->MDCTL[LPSC_USB]        |= 0x0203;
+    PSC->MDCTL[LPSC_ATA]        |= 0x0203;
+    PSC->MDCTL[LPSC_VLYNQ]      |= 0x0203;
+    PSC->MDCTL[LPSC_HPI]        |= 0x0203;
+    PSC->MDCTL[LPSC_DDR2]       |= 0x0203;
+    PSC->MDCTL[LPSC_AEMIF]      |= 0x0203;
+    PSC->MDCTL[LPSC_MMCSD]      |= 0x0203;
+    PSC->MDCTL[LPSC_MEMSTK]     |= 0x0203;
+    PSC->MDCTL[LPSC_ASP]        |= 0x0203;
+    PSC->MDCTL[LPSC_GPIO]       |= 0x0203;
+    PSC->MDCTL[LPSC_IMCOP]      |= 0x0203;
+
+    // Do Always-On Power Domain Transitions
+    PSC->PTCMD |= 0x00000001;
+    while ((PSC->PTSTAT) & 0x00000001);
+	
+	// Clear EMURSTIE to 0 on the following
+	PSC->MDCTL[LPSC_VPSS_SLV]   &= 0x0003;
+    PSC->MDCTL[LPSC_EMAC0]      &= 0x0003;
+    PSC->MDCTL[LPSC_EMAC1]      &= 0x0003;
+    PSC->MDCTL[LPSC_MDIO]       &= 0x0003;
+    PSC->MDCTL[LPSC_USB]        &= 0x0003;
+    PSC->MDCTL[LPSC_ATA]        &= 0x0003;
+    PSC->MDCTL[LPSC_VLYNQ]      &= 0x0003;
+    PSC->MDCTL[LPSC_HPI]        &= 0x0003;
+    PSC->MDCTL[LPSC_DDR2]       &= 0x0003;
+    PSC->MDCTL[LPSC_AEMIF]      &= 0x0003;
+    PSC->MDCTL[LPSC_MMCSD]      &= 0x0003;
+    PSC->MDCTL[LPSC_MEMSTK]     &= 0x0003;
+    PSC->MDCTL[LPSC_ASP]        &= 0x0003;
+    PSC->MDCTL[LPSC_GPIO]       &= 0x0003;
+    PSC->MDCTL[LPSC_IMCOP]      &= 0x0003;    
+
+	//***************************************
+	// Do DSP power domain transition
+	//***************************************
+	if ((PSC->PDSTAT1 & 0x1F) == 0)
+	{
+		// Set PSC force mode
+		PSC->GBLCTL |= 0x1;		// May not be necessary 
+		
+		// Set NEXT bit to on
+		PSC->PDCTL1 |= 0x1;
+		
+		// Clear external power indicator
+		PSC->PDCTL1 &= ~(0x100);
+
+		// Put the C64x+ Core into SwRstDisable
+		PSC->MDCTL[LPSC_DSP] = (PSC->MDCTL[LPSC_DSP] & (~0x00000001F)) | 0x0;
+		
+		// Start power domain transition
+		PSC->PTCMD |= 0x00000002;
+
+		// Wait for external power control pending to assert
+		while ( !((PSC->EPCPR) & (0x00000002)) );
+        
+		// Short the two power domain's voltage rails
+		SYSTEM->CHP_SHRTSW = 0x1;
+
+		// Clear the external power control bit
+		PSC->EPCCR = 0x00000002;
+
+		// Set external power good indicator
+        PSC->PDCTL1 |= 0x0100;
+		
+		// Wait for domain transition to complete
+		while ((PSC->PTSTAT) & (0x00000002));
+
+		// Enable DSP
+		PSC->MDCTL[LPSC_DSP] = (PSC->MDCTL[LPSC_DSP] & (~0x00000001F)) | 0x3;
+		// Hold DSP in reset on next power up
+		PSC->MDCTL[LPSC_DSP] = (PSC->MDCTL[LPSC_DSP] & (~0x100));
+		// Enable IMCOP
+		PSC->MDCTL[LPSC_IMCOP] = (PSC->MDCTL[LPSC_IMCOP] & (~0x00000001F)) | 0x3;
+
+		// Start power domain transition
+		PSC->PTCMD |= 0x00000002;
+
+		// Wait for domain transition to complete
+		while ((PSC->PTSTAT) & (0x00000002));
+		
+		// Wait until DSP local reset is asserted
+		while ((PSC->MDSTAT[LPSC_DSP]) & (0x00000100));
+		
+		// Clear PSC force mode
+		PSC->GBLCTL &= ~(0x00000001);
+	}
+}
+
 void PLL2Init()
 {	
-    // 162 MHz DDR
-//    Uint32 PLL2_Mult = 24;
-//    Uint32 PLL2_Div1 = 12;
-//    Uint32 PLL2_Div2 = 2;
-    
-    // 567 verison - only use this with older silicon/EVMs
-    // 189 MHz DDR
-    /*Uint32 PLL2_Mult = 14;
-    Uint32 PLL2_Div1 = 7;
-    Uint32 PLL2_Div2 = 1;*/
-    
         
 	// Set PLL2 clock input to external osc. 
 	PLL2->PLLCTL &= (~0x00000100);
@@ -205,50 +312,6 @@ void PLL2Init()
 
 void DDR2Init()
 {
-    
-    // For Micron MT47H64M16BT-37E @ 162 MHz
-    //Uint8 DDR_NM = 0;
-    //Uint8 DDR_CL = 3;
-    //Uint8 DDR_IBANK = 3;
-    //Uint8 DDR_PAGESIZE = 2;
-    //Uint8 DDR_T_RFC = 20;
-    //Uint8 DDR_T_RP = 2;
-    //Uint8 DDR_T_RCD = 2;
-    //Uint8 DDR_T_WR = 2;
-    //Uint8 DDR_T_RAS = 6;
-    //Uint8 DDR_T_RC = 8;
-    //Uint8 DDR_T_RRD = 2;
-    //Uint8 DDR_T_WTR = 1;
-    //Uint8 DDR_T_XSNR = 22;
-    //Uint8 DDR_T_XSRD = 199;
-    //Uint8 DDR_T_RTP = 1;
-    //Uint8 DDR_T_CKE = 2;
-    //Uint16 DDR_RR = 1264;
-    //Uint8 DDR_Board_Delay = 3;
-    //Uint8 DDR_READ_Latency = DDR_CL+DDR_Board_Delay-1;
-    //   
-    
-    // For Micron MT47H64M16BT-37E @ 189 MHz
-    /*Uint8 DDR_NM = 0;
-    Uint8 DDR_CL = 4;
-    Uint8 DDR_IBANK = 3;
-    Uint8 DDR_PAGESIZE = 2;
-    Uint8 DDR_T_RFC = 24;
-    Uint8 DDR_T_RP = 2;
-    Uint8 DDR_T_RCD = 2;
-    Uint8 DDR_T_WR = 2;
-    Uint8 DDR_T_RAS = 7;
-    Uint8 DDR_T_RC = 10;
-    Uint8 DDR_T_RRD = 2;
-    Uint8 DDR_T_WTR = 1;
-    Uint8 DDR_T_XSNR = 25;
-    Uint8 DDR_T_XSRD = 199;
-    Uint8 DDR_T_RTP = 1;
-    Uint8 DDR_T_CKE = 2;
-    Uint16 DDR_RR = 1477;
-    Uint8 DDR_Board_Delay = 2;
-    Uint8 DDR_READ_Latency = DDR_CL+DDR_Board_Delay-1;*/
-    
 	Int32 tempVTP;
 	
 	// Set the DDR2 to enable
@@ -256,8 +319,7 @@ void DDR2Init()
 		
 	// For Micron MT47H64M16BT-37E @ 162 MHz
 	// Setup the read latency (CAS Latency + 3 = 6 (but write 6-1=5))
-	//DDR->DDRPHYCR = 0x14001905;
-	DDR->DDRPHYCR = 0x14001900 | DDR_READ_Latency;
+	DDR->DDRPHYCR = (0x50006400) | DDR_READ_Latency;
 	// Set TIMUNLOCK bit, CAS LAtency 3, 8 banks, 1024-word page size 
 	//DDR->SDBCR = 0x00138632;
 	DDR->SDBCR = 0x00138000 |
@@ -276,11 +338,13 @@ void DDR2Init()
                   (DDR_T_RC << 6)   |
                   (DDR_T_RRD << 3)  |
                   (DDR_T_WTR << 0);
+                  
 	//DDR->SDTIMR2 = 0x0016C722;
 	DDR->SDTIMR2 = (DDR_T_XSNR << 16) |
                    (DDR_T_XSRD << 8)  |
                    (DDR_T_RTP << 5)   |
                    (DDR_T_CKE << 0);
+    
     
     // Clear the TIMUNLOCK bit 
 	DDR->SDBCR &= (~0x00008000);
@@ -298,7 +362,6 @@ void DDR2Init()
 
 	// Set the DDR2 to enable
 	LPSCTransition(LPSC_DDR2, PSC_ENABLE);
-	
 			 
 	/***************** DDR2 VTP Calibration ****************/
 	DDR->VTPIOCR = 0x201F;        // Clear calibration start bit
@@ -318,7 +381,6 @@ void DDR2Init()
 	
 	// DDRVTPR Enable register - disable DDRVTPR access 
 	SYSTEM->DDRVTPER = 0x0;
-	
 }
 
 void PLL1Init()

@@ -6,15 +6,19 @@
 #   been generated first.                                   #
 #############################################################
 # Auth: Daniel Allred
-# Vers: v1.00 on 22-Jan-2006
-#       v1.10 on 01-Feb-2006
-VER=1_10
+# Vers: v1.00 on 22-Jan-2007
+#       v1.10 on 01-Feb-2007
+#       v1.11 on 07-Mar-2007
+#       v1.12 on 14-Mar-2007
+#       v1.13 on 04-Jun-2007
+#       v1.14 on 13-Sep-2007   
+VER=1_14
 
 MONOCOMPILE=gmcs
 DOTNETCOMPILE=csc
 
 SOURCES=DVFlasher.cs CRC32.cs 
-EXECUTABLE=DVFlasher_$(VER).exe 
+EXECUTABLE=../exe/DVFlasher_$(VER).exe 
 NORUBLIMAGE=../ubl/ubl_davinci_nor.bin
 NORUBLSTARTADDR=$(shell cat ../ubl/ubl_davinci_nor_start_addr.txt)
 NANDUBLIMAGE=../ubl/ubl_davinci_nand.bin

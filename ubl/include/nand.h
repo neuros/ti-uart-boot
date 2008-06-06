@@ -3,11 +3,18 @@
     PURPOSE     : NAND header file
     PROJECT     : DaVinci User Boot-Loader and Flasher
     AUTHOR      : Daniel Allred
-    DATE	    : Jan-22-2007
+    DATE	    : 04-Jun-2007
 
     HISTORY
         v1.00 completion
- 	        Daniel Allred - Jan-22-2007
+ 	          Daniel Allred - Jan-22-2007
+ 	    v1.11 - DJA - 07-Mar-2007
+ 	          Added LPSC_1394 to power domain defines for use in setting the
+ 	          1394 power domain MDSTAT (Silicon workaround for reset from WDT)
+		v1.13 - DJA - 04-Jun-2007
+              Hefty modifications to NAND code, reducing code path to one, 
+			  regardless of page size.  Also adding ECC correction code.
+			  Removing static allocation of temp page data.
  ----------------------------------------------------------------------------- */
 
 
@@ -71,6 +78,9 @@
 
 #define UNKNOWN_NAND		    (0xFF)			// Unknown device id
 #define MAX_PAGE_SIZE	        (2112)          // Including Spare Area
+#define MAX_BYTES_PER_OP        (512)           // Bytes per operation (device constrained by ECC calculations)
+#define MAX_BYTES_PER_OP_SHIFT  (9)             // Num of right shifts to enable division by MAX_BYTES_PER_OP
+#define SPAREBYTES_PER_OP_SHIFT (5)             // Num of right shifts to get spare_bytes per op from bytes per op
 
 // Macro gets the page size in bytes without the spare bytes 
 #define NANDFLASH_PAGESIZE(x) ( ( x >> 8 ) << 8 )
@@ -89,15 +99,20 @@ typedef struct _NAND_DEV_STRUCT_ {
 typedef struct _NAND_MEDIA_STRUCT_ {
     Uint32  flashBase;          // Base address of CS memory space where NAND is connected
 	Uint8   busWidth;           // NAND width 1->16 bits 0->8 bits
+	Uint8   manfID;             // NAND manufacturer ID (just for informational purposes)
 	Uint8   devID;              // NAND_DevTable index
 	Uint16  numBlocks;          // block count per device
 	Uint8   pagesPerBlock;      // page count per block
 	Uint16  bytesPerPage;       // Number of bytes in a page
+	Uint16  bytesPerOp;         // Number of bytes per operation
+	Uint8   spareBytesPerOp;    // Number of bytes in spare byte area of each page   	
+	Uint8   numOpsPerPage;      // Number of operations to complete a page read/write
 	Uint8   numColAddrBytes;    // Number of Column address cycles
 	Uint8   numRowAddrBytes;    // Number of Row address cycles
 	Uint32  ECCMask;            // Mask for ECC register
+	Uint8   ECCOffset;          // Offset in spareBytePerOp for ECC Value
+	Bool    ECCEnable;			// Error correction enable (should be on by default)
 	Bool    bigBlock;			// TRUE - Big block device, FALSE - small block device
-	Uint8   spareBytesPerPage;  // Number of bytes in spare byte area of each page   	
 	Uint8   blkShift;			// Number of bits by which block address is to be shifted
 	Uint8   pageShift;			// Number of bits by which page address is to be shifted
 	Uint8   CSOffset;           // 0 for CS2 space, 1 for CS3 space, 2 for CS4 space, 3 for CS5 space
