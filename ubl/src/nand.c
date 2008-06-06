@@ -515,6 +515,10 @@ Uint32 NAND_ReadPage(Uint32 block, Uint32 page, Uint8 *dest) {
 		flash_read_bytes((PNAND_INFO)&gNandInfo, (void*)(spareValue), gNandInfo.spareBytesPerOp);
 		flash_swap_data((PNAND_INFO)&gNandInfo, (Uint32*)(spareValue+gNandInfo.ECCOffset));
 
+        if(spareValue[gNandInfo.ECCOffset] == 0xffffffff)
+            spareValue[gNandInfo.ECCOffset] = ~spareValue[gNandInfo.ECCOffset];
+        if(eccValue[i] == 0xffffffff) 
+            eccValue[i] = ~eccValue[i];
 		// Verify ECC values
 		if(eccValue[i] != spareValue[gNandInfo.ECCOffset])
 		{
