@@ -1,1 +1,1 @@
-DVFlasher_1_10.exe -fnandbin u-boot.bin
+DVFlasher_1_14.exe -fnandbin u-boot.bin
