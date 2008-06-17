@@ -141,7 +141,7 @@ void IOB01_Init(void)
 	SYSTEM->PINMUX[0] = 0x80000000;	// PINMUX0 - enable EMAC, AEAW[4:0]=0
 	SYSTEM->PINMUX[1] = 0x00010081;	// PINMUX1 - Enable CLK0, I2C, UART0
 	REG(0x1c67038) = 0xffffbc5f;	// Output GIOs = 45, 41, 40, 39, 37
-	REG(0x1c6703c) = 0x000002a0;	// Set NAND_WE=1, SD_CAP#=1, HD_CAP#=1
+	REG(0x1c6703c) = 0x000003a0;	// Set CRYSTAL_ENABLE=1, NAND_WE=1, SD_CAP#=1, HD_CAP#=1
 }
 	
 void DM644xInit()
