@@ -114,19 +114,20 @@ NAND_retry:
 			page = 0;
 			block++;
 		}
+NAND_retry_read:
 		readError = NAND_ReadPage(block,page++,(&rxBuf[i*gNandInfo.bytesPerPage]));	/* Copy the data */
 
-		// We attempt to read the app data twice.  If we fail twice then we go look for a new
-		// application header in the NAND flash at the next block.
-		if(readError != E_PASS) {
-			if(failedOnceAlready) {
-				blockNum++;
-				goto NAND_startAgain;
+		// We attempt to read the page data twice.  If we fail twice then we go look for next block
+		if(readError != E_PASS) {		
+			page--;
+			if(failedOnceAlready) {	
+				block++;
+				failedOnceAlready = FALSE;
 			}
-		    else {
-		        failedOnceAlready = TRUE;
-				goto NAND_retry;
+			else {
+				failedOnceAlready = TRUE;
 			}
+			goto NAND_retry_read;
 		}
 	}
 

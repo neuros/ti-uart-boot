@@ -20,7 +20,7 @@
 #include "tistdtypes.h"
 
 //UBL version number
-#define UBL_VERSION_STRING "1.143"
+#define UBL_VERSION_STRING "1.144"
 #ifdef UBL_NAND
 #define UBL_FLASH_TYPE "NAND"
 #else
